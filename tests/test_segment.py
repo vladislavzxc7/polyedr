@@ -9,11 +9,15 @@ def flatten(list):
 
 
 def seg_approx(self, other):
-    return self.beg == approx(other.beg) and self.fin == approx(other.fin) or \
-        self.beg == approx(other.fin) and self.fin == approx(other.beg)
+    return (
+        self.beg == approx(other.beg)
+        and self.fin == approx(other.fin)
+        or self.beg == approx(other.fin)
+        and self.fin == approx(other.beg)
+    )  # pragma: no cover
 
 
-setattr(Segment, 'approx', seg_approx)
+setattr(Segment, "approx", seg_approx)
 
 
 class TestSegment:
@@ -102,9 +106,10 @@ class TestSegment:
         a = Segment(0.0, 1.0)
         b = Segment(0.0, 0.5)
         c = Segment(0.5, 1.0)
-        assert all(t.is_degenerate() for
-                   t in flatten(s.subtraction(c) for
-                                s in a.subtraction(b)))
+        assert all(
+            t.is_degenerate()
+            for t in flatten(s.subtraction(c) for s in a.subtraction(b))
+        )
 
     # Если из отрезка вычесть его половинку, а затем ещё один небольшой
     # отрезочек, то невырожденным будет только один из итоговых отрезков
@@ -112,9 +117,17 @@ class TestSegment:
         a = Segment(0.0, 1.0)
         b = Segment(0.0, 0.5)
         c = Segment(0.6, 1.0)
-        assert len(list(not t.is_degenerate() for
-                        t in flatten(s.subtraction(c) for
-                                     s in a.subtraction(b)))) == 1
+        assert (
+            len(
+                list(
+                    not t.is_degenerate()
+                    for t in flatten(
+                        s.subtraction(c) for s in a.subtraction(b)
+                    )
+                )
+            )
+            == 1
+        )
 
     # Если из отрезка вычесть два небольших отрезочка, то невырожденными
     # будут все три итоговых отрезка
@@ -122,6 +135,14 @@ class TestSegment:
         a = Segment(0.0, 1.0)
         b = Segment(0.1, 0.2)
         c = Segment(0.4, 0.8)
-        assert len(list(not t.is_degenerate() for
-                        t in flatten(s.subtraction(c) for
-                                     s in a.subtraction(b)))) == 3
+        assert (
+            len(
+                list(
+                    not t.is_degenerate()
+                    for t in flatten(
+                        s.subtraction(c) for s in a.subtraction(b)
+                    )
+                )
+            )
+            == 3
+        )

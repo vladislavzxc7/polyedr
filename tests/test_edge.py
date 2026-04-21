@@ -4,19 +4,26 @@ from shadow.polyedr import Segment, Edge, Facet
 
 
 def r3approx(self, other):
-    return self.x == approx(other.x) and self.y == approx(other.y) and \
-        self.z == approx(other.z)
+    return (
+        self.x == approx(other.x)
+        and self.y == approx(other.y)
+        and self.z == approx(other.z)
+    )  # pragma: no cover
 
 
-setattr(R3, 'approx', r3approx)
+setattr(R3, "approx", r3approx)
 
 
 def seg_approx(self, other):
-    return self.beg == approx(other.beg) and self.fin == approx(other.fin) or \
-        self.beg == approx(other.fin) and self.fin == approx(other.beg)
+    return (
+        self.beg == approx(other.beg)
+        and self.fin == approx(other.fin)
+        or self.beg == approx(other.fin)
+        and self.fin == approx(other.beg)
+    )  # pragma: no cover
 
 
-setattr(Segment, 'approx', seg_approx)
+setattr(Segment, "approx", seg_approx)
 
 
 class TestEdge:
@@ -75,31 +82,65 @@ class TestEdge:
     # Грань не затеняет ребро, принадлежащее этой же грани
     def test_shadow_01(self):
         s = Edge(R3(0.0, 0.0, 0.0), R3(1.0, 1.0, 0.0))
-        f = Facet([R3(0.0, 0.0, 0.0), R3(2.0, 0.0, 0.0),
-                   R3(2.0, 2.0, 0.0), R3(0.0, 2.0, 0.0)])
+        vs = [
+            R3(0.0, 0.0, 0.0),
+            R3(2.0, 0.0, 0.0),
+            R3(2.0, 2.0, 0.0),
+            R3(0.0, 2.0, 0.0),
+        ]
+        f = Facet(vs, vs, R3(0.0, 0.0, 0.0))
         s.shadow(f)
         assert s.gaps[0].approx(Segment(0.0, 1.0))
 
     # Грань не затеняет ребро, расположенное выше этой грани
     def test_shadow_02(self):
         s = Edge(R3(0.0, 0.0, 1.0), R3(1.0, 1.0, 1.0))
-        f = Facet([R3(0.0, 0.0, 0.0), R3(2.0, 0.0, 0.0),
-                   R3(2.0, 2.0, 0.0), R3(0.0, 2.0, 0.0)])
+        vs = [
+            R3(0.0, 0.0, 0.0),
+            R3(2.0, 0.0, 0.0),
+            R3(2.0, 2.0, 0.0),
+            R3(0.0, 2.0, 0.0),
+        ]
+        f = Facet(vs, vs, R3(0.0, 0.0, 0.0))
         s.shadow(f)
         assert s.gaps[0].approx(Segment(0.0, 1.0))
 
     # Грань полностью затеняет ребро, расположенное под этой гранью
     def test_shadow_03(self):
         s = Edge(R3(0.0, 0.0, -1.0), R3(1.0, 1.0, -1.0))
-        f = Facet([R3(0.0, 0.0, 0.0), R3(2.0, 0.0, 0.0),
-                   R3(2.0, 2.0, 0.0), R3(0.0, 2.0, 0.0)])
+        vs = [
+            R3(0.0, 0.0, 0.0),
+            R3(2.0, 0.0, 0.0),
+            R3(2.0, 2.0, 0.0),
+            R3(0.0, 2.0, 0.0),
+        ]
+        f = Facet(vs, vs, R3(0.0, 0.0, 0.0))
         s.shadow(f)
         assert len(s.gaps) == 0
 
     # На длинном ребре, лежащем ниже грани, образуется ровно два просвета
     def test_shadow_04(self):
         s = Edge(R3(-5.0, -5.0, -1.0), R3(3.0, 3.0, -1.0))
-        f = Facet([R3(0.0, 0.0, 0.0), R3(2.0, 0.0, 0.0),
-                   R3(2.0, 2.0, 0.0), R3(0.0, 2.0, 0.0)])
+        vs = [
+            R3(0.0, 0.0, 0.0),
+            R3(2.0, 0.0, 0.0),
+            R3(2.0, 2.0, 0.0),
+            R3(0.0, 2.0, 0.0),
+        ]
+        f = Facet(vs, vs, R3(0.0, 0.0, 0.0))
         s.shadow(f)
         assert len(s.gaps) == 2
+
+    # Грань вертикальна -> shadow сразу возвращает управление, просветы не
+    # меняются
+    def test_shadow_vertical_facet_returns_early(self):
+        # Вертикальная грань (стена в плоскости YZ)
+        vs = [R3(0, 0, 0), R3(0, 1, 0), R3(0, 1, 2), R3(0, 0, 2)]
+        f = Facet(vs, vs, R3(0, 0.5, 1.0))
+
+        # Ребро, пересекающее грань по горизонтали
+        s = Edge(R3(-1.0, 0.5, 1.0), R3(1.0, 0.5, 1.0))
+        s.shadow(f)
+
+        # Тень не должна была рассчитаться -> gaps остался исходным
+        assert len(s.gaps) == 1
