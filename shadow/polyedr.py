@@ -83,7 +83,6 @@ class Facet:
         if len(self.vertexes) < 3:
             return True
         return self.h_normal().dot(Polyedr.V) == 0.0
-        return self.h_normal().dot(Polyedr.V) == 0.0
 
     def h_normal(self):
         n = (self.vertexes[1] - self.vertexes[0]).cross(
