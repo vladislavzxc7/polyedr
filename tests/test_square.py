@@ -28,22 +28,22 @@ setattr(Segment, "approx", seg_approx)
 
 class TestSquareVisible:
 
-    def test_tes1_basic_visible(self, capsys):
-        P = Polyedr("tests/test1.geom")
+    def test_tes1_basic_visible(self):
+        P = Polyedr("data/test1.geom")
         res = P.square_visible()
         assert res == approx(16.0)
 
-    def test_tes2_cube_boundary(self, capsys):
-        P = Polyedr("tests/test2.geom")
+    def test_tes2_cube_boundary(self):
+        P = Polyedr("data/test2.geom")
         res = P.square_visible()
         assert res == approx(0.0)
 
-    def test_tes3_shadow_logic(self, capsys):
-        P = Polyedr("tests/test3.geom")
+    def test_tes3_shadow_logic(self):
+        P = Polyedr("data/test3.geom")
         res = P.square_visible()
         assert res == approx(36.0)
 
-    def test_tes4_triangle_area(self, capsys):
-        P = Polyedr("tests/test4.geom")
+    def test_tes4_triangle_area(self):
+        P = Polyedr("data/test4.geom")
         res = P.square_visible()
         assert res == approx(8.0)
